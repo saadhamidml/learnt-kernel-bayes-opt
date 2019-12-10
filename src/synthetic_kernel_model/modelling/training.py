@@ -19,9 +19,12 @@ def train(force_train,
     if kernel == 'rbf':
         model = models.ExactGPModel(train_x, train_y, likelihood)
     elif kernel == 'spectral_mixture':
-        pass
+        model = models.SpectralMixtureGPModel(train_x, train_y, likelihood)
+    elif kernel == 'sparse_spectrum':
+        model = models.SparseSpectrumGPModel(train_x, train_y, likelihood)
     if optimiser_type == 'adam':
-        optimiser = torch.optim.Adam(model.parameters, lr=learning_rate)
+        optimiser = torch.optim.Adam([{'params': model.parameters()}, ],
+                                     lr=learning_rate)
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     if not force_train and (log_dir / 'checkpoint.tar').exists():
         checkpoint = torch.load(log_dir / 'checkpoint.tar')
@@ -41,9 +44,9 @@ def train(force_train,
             print(f'Iteration: {i + 1}/{training_iterations}',
                   f'    Loss: {loss.item()}')
             optimiser.step()
-    torch.save({'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimiser.state_dict(),
-                'iter': i + 1,
-                'loss': loss},
-               log_dir / 'checkpoint.tar')
+        torch.save({'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': optimiser.state_dict(),
+                    'iter': i + 1,
+                    'loss': loss},
+                   log_dir / 'checkpoint.tar')
     return model, likelihood

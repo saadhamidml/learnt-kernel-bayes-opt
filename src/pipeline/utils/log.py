@@ -3,25 +3,25 @@ import sys
 import subprocess
 
 
-def save_config(flags, unparsed_args):
-    """Make directories for results and save command line flags."""
-
-    log_dir = Path(flags.log_dir) / Path(flags.dataset)
+def default_log_dir(flags):
+    log_dir = (Path(flags.log_dir)
+               / Path(flags.problem)
+               / f'{flags.n_initial_evaluations}_{flags.evaluation_budget}')
     if flags.run_name is not None:
         log_dir = log_dir / Path(flags.run_name)
     else:
-        run_name = (f'{flags.x_start}'
-                    + f'{flags.x_end}'
-                    + f'{flags.x_step}'
-                    + f'{flags.test_size}'
-                    + f'{flags.kernel}'
+        run_name = (f'{flags.kernel}'
                     + f'{flags.likelihood_type}'
                     + f'{flags.optimiser_type}'
                     + f'{flags.learning_rate}'
                     + f'{flags.training_iterations}')
-        log_dir = log_dir / Path(run_name) / str(flags.seed)
+        log_dir = log_dir / Path(run_name) / f'{flags.seed}'
     log_dir.mkdir(parents=True, exist_ok=True)
+    return log_dir
 
+
+def save_config(flags, unparsed_args, log_dir=Path('./')):
+    """Save command line flags."""
     print("flags:", flags)
     print("unparsed_args:", unparsed_args)
     # writing arguments and git hash to info file
@@ -40,7 +40,6 @@ def save_config(flags, unparsed_args):
     file.write('\n\nBASH COMMAND: \n')
     file.write(bash_command)
     file.close()
-    return log_dir
 
 
 class StdoutRedirection:
