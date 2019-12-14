@@ -1,6 +1,6 @@
 def get_flags(parser):
+    parser.add_argument('--function', type=str, default='exp_sin_squared')
     parser.set_defaults(
-        function='exp_sin_squared',
         noise_std=0.001,
         x_start=-5,
         x_end=5,

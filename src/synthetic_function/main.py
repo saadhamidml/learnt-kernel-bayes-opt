@@ -1,19 +1,17 @@
 from pathlib import Path
+import numpy as np
 from ax import SimpleExperiment
-from ax.benchmark.benchmark_suite import BOBenchmarkingSuite
-from IPython.core.display import HTML
 
-from .utils import cli
 from .problem import define_problem
-from pipeline.utils import log
 from pipeline.modelling.utils import get_model_constructor
-from pipeline.bayes_opt import sobol_initialise, bayes_opt_loop
+from pipeline.bayes_opt.initialise import sobol
+from pipeline.bayes_opt.bayes_opt import bayes_opt_loop
+import pipeline.bayes_opt.visualisation as bo_vis
 
 
-def run_experiment_wrapper(parser):
-    flags, unparsed_args = cli.get_flags(parser)
-    log_dir = log.default_log_dir(flags)
-    log.save_config(flags, unparsed_args, log_dir=log_dir)
+def run_experiment_wrapper(flags, log_dir=None, observer=None):
+    if log_dir is None:
+        log_dir = flags.log_dir
     run_experiment(
         function=flags.function,
         x_start=flags.x_start,
@@ -32,7 +30,8 @@ def run_experiment_wrapper(parser):
         vis_start=flags.vis_start,
         vis_end=flags.vis_end,
         vis_step=flags.vis_step,
-        log_dir=log_dir
+        log_dir=log_dir,
+        observer=observer
     )
 
 
@@ -54,9 +53,16 @@ def run_experiment(
         vis_start=None,
         vis_end=None,
         vis_step=None,
-        log_dir=Path('./')
+        log_dir=Path('./'),
+        observer=None
 ):
-    problem, search_space = define_problem(function, noise_std, x_start, x_end)
+    problem, search_space = define_problem(
+        function,
+        noise_std,
+        x_start,
+        x_end,
+        observer=observer
+    )
     model_constructor = get_model_constructor(
         kernel,
         likelihood_type,
@@ -70,7 +76,7 @@ def run_experiment(
         evaluation_function=problem,
         objective_name='function'
     )
-    sobol_initialise(experiment, n_initial_evaluations, seed)
+    sobol(experiment, n_initial_evaluations, seed)
     bayes_opt_loop(experiment,
                    model_constructor,
                    acquisition_function,
@@ -80,4 +86,12 @@ def run_experiment(
                    vis_start=vis_start,
                    vis_end=vis_end,
                    vis_step=vis_step,
-                   log_dir=log_dir)
+                   log_dir=log_dir,
+                   observer=observer)
+    if visualise:
+        bo_vis.regret(
+            np.array(observer.results['regret']['location']),
+            np.array(observer.results['regret']['function']),
+            n_initial_evaluations=n_initial_evaluations,
+            log_dir=log_dir
+        )

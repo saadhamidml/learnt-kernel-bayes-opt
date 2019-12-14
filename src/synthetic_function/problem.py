@@ -13,12 +13,16 @@ def define_problem(
         function_name='exp_sin_squared',
         noise_std=0.001,
         x_start=-5,
-        x_end=5
+        x_end=5,
+        observer=None
 ):
 
     if function_name == 'exp_sin_squared':
         def function(x):
             return torch.exp(-(torch.sin(3 * x)**2 + x**2))
+        if observer is not None:
+            observer.results['optimum']['x'] = 0
+            observer.results['optimum']['function'] = 1
 
     def evaluation_function(parameterisation):
         return {

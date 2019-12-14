@@ -15,6 +15,11 @@ def get_seeds(seed, repeat_exp):
     return seeds
 
 
+def add_seeds(seeds, repeat_exp):
+    new_seeds = generate_seeds(repeat_exp - len(seeds))
+    return seeds + new_seeds
+
+
 def set_seed(flags, seeds, i):
     flags.seed = seeds[i]
     torch.manual_seed(flags.seed)

@@ -20,7 +20,7 @@ class ExObserver:
         self.record = []
         self.results = {}
 
-    def register_run(self, model_type, config=None):
+    def register_run(self, config=None):
         if config is not None:
             self.record.append(dict(zip(self.hyp_params.keys(), config)))
         else:
@@ -28,7 +28,9 @@ class ExObserver:
         # Changing self.results will alter self.record
         self.results = self.record[-1]
         self.results['seed'] = []
-        self.results['accuracy'] = []
+        self.results['test_mll'] = []
+        self.results['optimum'] = {}
+        self.results['regret'] = {'location': [], 'function': []}
 
     def compare_configs(self, metric, print_wrt=None, log_dir=Path('./')):
         """For each combo of hyp_params work out the averages and std_devs
@@ -45,7 +47,7 @@ class ExObserver:
             averages.append(config_average)
             std_devs.append(config_std_dev)
             if print_wrt is not None:
-                with StdoutRedirection(log_dir
+                with log.StdoutRedirection(log_dir
                         / (f'{metric}_wrt_{print_wrt}'
                            + f'_{time.strftime("%m%d_%H%M%S")}_.txt')):
                     print(f'{print_wrt} = {config[print_wrt]}:    ',
@@ -60,7 +62,7 @@ class ExObserver:
         else:
             best_index = np.argmin(averages)
         best_config = self.record[best_index]
-        with StdoutRedirection(log_dir
+        with log.StdoutRedirection(log_dir
                 / f'best_{metric}_{time.strftime("%m%d_%H%M%S")}.txt'):
             print(f'Best Average {metric}')
             for key, value in best_config.items():
@@ -68,51 +70,57 @@ class ExObserver:
             print(f'average {metric}: {averages[best_index]}')
 
 
-def multi_config(run_experiment,
-                 flags,
-                 unparsed_args,
-                 hyp_params=None,
-                 seeds=None,
-                 mode='grid'):
-    """Wrapper that runs the function run_experiment for different sets
-    of hyperparameters and seeds.
+def multi_config(
+        run_experiment_wrapper,
+        flags,
+        unparsed_args=[],
+        options=None,
+        seeds=None,
+        mode='grid'
+):
+    """Wrapper that runs the function run_experiment_wrapper for
+    different sets of options and seeds.
 
-    The relevant flags are overwitten by hyp_params on each run.
+    The relevant flags are overwitten by options on each run.
     seeds specifies the PyTorch and NumPy seeds.
     The mode can be 'grid' or 'list'.
-        'grid' runs every possible combination of hyp_params.
-        'list' runs sets of hyp_params. e.g. specify different epochs
-            for each model with hyp_params = {'model': [m1, m2],
+        'grid' runs every possible combination of options.
+        'list' runs sets of options. e.g. specify different epochs
+            for each model with options = {'model': [m1, m2],
                                               'epochs': [e1, e2]}
     """
-    # TODO: if flags.repeat_exp > len(seeds) allow some to be specified
+
     if seeds is None:
         seeds = random_seeds.get_seeds(flags.seed, flags.repeat_exp)
+    elif flags.repeat_exp > len(seeds):
+        seeds = random_seeds.add_seeds(seeds, flags.repeat_exp)
     else:
         flags.repeat_exp = len(seeds)
-    if hyp_params is not None:
-        ex_observer = ExObserver(seeds, hyp_params)
+    if options is not None:
+        observer = ExObserver(seeds, options)
         # Build list of configs depending on mode
         if mode == 'grid':
-            configs = itertools.product(*tuple(hyp_params.values()))
+            configs = itertools.product(*tuple(options.values()))
         elif mode == 'list':
-            configs = zip(*tuple(hyp_params.values()))
+            configs = zip(*tuple(options.values()))
         # Run experiment for each hyperparameter combination.
         for config in configs:
-            for i, key in enumerate(hyp_params.keys()):
+            for i, key in enumerate(options.keys()):
                 setattr(flags, key, config[i])
-            ex_observer.register_run(flags.model, config)
+            observer.register_run(config)
             for i in range(flags.repeat_exp):
                 random_seeds.set_seed(flags, seeds, i)
-                log.save_config(flags)
-                ex_observer.results['seed'].append(flags.seed)
-                run_experiment(flags, unparsed_args, ex_observer)
+                _, log_dir = log.default_log_dir(flags)
+                log.save_config(flags, unparsed_args, log_dir)
+                observer.results['seed'].append(flags.seed)
+                run_experiment_wrapper(flags, log_dir, observer)
     else:
-        ex_observer = ExObserver(seeds)
-        ex_observer.register_run(flags.model)
+        observer = ExObserver(seeds)
+        observer.register_run()
         for i in range(flags.repeat_exp):
             random_seeds.set_seed(flags, seeds, i)
-            log.save_config(flags)
-            ex_observer.results['seed'].append(flags.seed)
-            run_experiment(flags, unparsed_args, ex_observer)
-    return ex_observer
+            _, log_dir = log.default_log_dir(flags)
+            log.save_config(flags, unparsed_args, log_dir)
+            observer.results['seed'].append(flags.seed)
+            run_experiment_wrapper(flags, log_dir, observer)
+    return observer

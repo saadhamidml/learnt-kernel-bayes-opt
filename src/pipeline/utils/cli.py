@@ -30,7 +30,7 @@ def get_parser():
     parser.add_argument('--num_mixtures', type=int, default=None)
     parser.add_argument('--optimiser_type', type=str, default='sgd')
     parser.add_argument('--learning_rate', type=float, default=1e-1)
-    parser.add_argument('--training_iterations', type=int, default=50)
+    parser.add_argument('--training_iterations', type=int, default=1e3)
 
     # Bayesian Optimisation options
     parser.add_argument('--acquisition_function', type=str, default='nei')
@@ -38,9 +38,9 @@ def get_parser():
     # Experiment options
     parser.add_argument('--seed', type=int, default=None,
                         help='Random seed for both Numpy and Pytorch.')
-    parser.add_argument('--x_start', type=float, default=-10)
-    parser.add_argument('--x_end', type=float, default=10.5)
-    parser.add_argument('--x_step', type=float, default=0.5)
+    parser.add_argument('--x_start', type=float, default=None)
+    parser.add_argument('--x_end', type=float, default=None)
+    parser.add_argument('--x_step', type=float, default=None)
     parser.add_argument('--test_size', type=float, default=0.2)
     parser.add_argument('--noise_std', type=float, default=None)
 
