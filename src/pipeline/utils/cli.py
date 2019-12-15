@@ -26,11 +26,12 @@ def get_parser():
     # Model parameters
     parser.add_argument('--likelihood_type', type=str, default='gaussian')
     parser.add_argument('--kernel', type=str, default='rbf',
-                        help='rbf, spectral_mixture')
-    parser.add_argument('--num_mixtures', type=int, default=None)
-    parser.add_argument('--optimiser_type', type=str, default='sgd')
-    parser.add_argument('--learning_rate', type=float, default=1e-1)
-    parser.add_argument('--training_iterations', type=int, default=1e3)
+                        help='rbf, matern, spectral_mixture, sparse_spectrum')
+    parser.add_argument('--nu', type=float, default=None)
+    parser.add_argument('--n_mixtures', type=int, default=None)
+    # parser.add_argument('--optimiser_type', type=str, default='sgd')
+    # parser.add_argument('--learning_rate', type=float, default=1e-1)
+    # parser.add_argument('--training_iterations', type=int, default=1e3)
 
     # Bayesian Optimisation options
     parser.add_argument('--acquisition_function', type=str, default='nei')
@@ -47,6 +48,6 @@ def get_parser():
     # Visualisation options
     parser.add_argument('--vis_start', type=float, default=None)
     parser.add_argument('--vis_end', type=float, default=None)
-    parser.add_argument('--vis_step', type=float, default=None)
+    parser.add_argument('--vis_density', type=int, default=250)
 
     return parser

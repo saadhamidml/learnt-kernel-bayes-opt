@@ -17,7 +17,7 @@ def bayes_opt_loop(experiment,
                    visualise=False,
                    vis_start=None,
                    vis_end=None,
-                   vis_step=None,
+                   vis_density=None,
                    log_dir=Path('./'),
                    observer=None):
     print(f'Running Bayesian Optimisation')
@@ -48,8 +48,6 @@ def bayes_opt_loop(experiment,
             observer.results['regret']['function'].append(fun_regret.item())
 
         if visualise:
-            log_dir_i = log_dir / f'{i}'
-            log_dir_i.mkdir(parents=True, exist_ok=True)
             # go.Figure(
             #     data=plot_slice(model, 'x', 'function').data
             # ).write_image(str(log_dir_i / 'posterior.png'))
@@ -58,23 +56,26 @@ def bayes_opt_loop(experiment,
                 experiment,
                 vis_start,
                 vis_end,
-                vis_step,
-                log_dir=log_dir_i
+                vis_density,
+                log_dir=log_dir,
+                point_num=i
             )
             mod_vis.kernel(
                 model,
                 vis_start,
                 vis_end,
-                vis_step,
-                log_dir=log_dir_i
+                vis_density,
+                log_dir=log_dir,
+                point_num=i
             )
             bo_vis.acquisition_function(
                 model,
                 experiment,
                 vis_start,
                 vis_end,
-                vis_step,
-                log_dir=log_dir_i
+                vis_density,
+                log_dir=log_dir,
+                point_num=i
             )
 
         # Generate new point.

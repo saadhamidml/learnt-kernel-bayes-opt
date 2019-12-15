@@ -3,7 +3,7 @@ import itertools
 import time
 import numpy as np
 
-from .utils import log, random_seeds
+from . import log, random_seeds
 
 
 class ExObserver:
@@ -76,7 +76,8 @@ def multi_config(
         unparsed_args=[],
         options=None,
         seeds=None,
-        mode='grid'
+        mode='grid',
+        get_log_dir=None
 ):
     """Wrapper that runs the function run_experiment_wrapper for
     different sets of options and seeds.
@@ -90,6 +91,8 @@ def multi_config(
                                               'epochs': [e1, e2]}
     """
 
+    if get_log_dir is None:
+        get_log_dir = log.default_log_dir
     if seeds is None:
         seeds = random_seeds.get_seeds(flags.seed, flags.repeat_exp)
     elif flags.repeat_exp > len(seeds):
@@ -110,7 +113,7 @@ def multi_config(
             observer.register_run(config)
             for i in range(flags.repeat_exp):
                 random_seeds.set_seed(flags, seeds, i)
-                _, log_dir = log.default_log_dir(flags)
+                _, log_dir = get_log_dir(flags)
                 log.save_config(flags, unparsed_args, log_dir)
                 observer.results['seed'].append(flags.seed)
                 run_experiment_wrapper(flags, log_dir, observer)
@@ -119,7 +122,7 @@ def multi_config(
         observer.register_run()
         for i in range(flags.repeat_exp):
             random_seeds.set_seed(flags, seeds, i)
-            _, log_dir = log.default_log_dir(flags)
+            _, log_dir = get_log_dir(flags)
             log.save_config(flags, unparsed_args, log_dir)
             observer.results['seed'].append(flags.seed)
             run_experiment_wrapper(flags, log_dir, observer)

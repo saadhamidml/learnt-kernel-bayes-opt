@@ -21,12 +21,13 @@ def euclidean_distance(x, y):
 def posterior(
         model,
         experiment,
-        vis_start=-10,
-        vis_end=10.1,
-        vis_step=0.1,
-        log_dir=Path('./')
+        vis_start=None,
+        vis_end=None,
+        vis_density=250,
+        log_dir=Path('./'),
+        point_num=0
 ):
-    vis_x = torch.arange(vis_start, vis_end, vis_step, dtype=torch.double)
+    vis_x = torch.linspace(vis_start, vis_end, vis_density, dtype=torch.double)
     vis_x_transformed = bo_utils.apply_x_transforms(vis_x, model)
 
     train_x = []
@@ -62,20 +63,22 @@ def posterior(
         ax.legend(['Observed Data', 'Mean', 'Confidence'])
 
         log_dir.mkdir(parents=True, exist_ok=True)
-        fig.savefig(log_dir / 'posterior.png')
+        fig.savefig(log_dir / f'posterior{point_num:02}.png')
         plt.close(fig)
 
 
 def kernel(
         model,
-        vis_start=-10,
-        vis_end=10.1,
-        vis_step=0.1,
+        vis_start=None,
+        vis_end=None,
+        vis_density=250,
         true_kernel=None,
-        log_dir=Path('./')
+        log_dir=Path('./'),
+        point_num=0
 ):
     max_dist = vis_end - vis_start
-    vis_x = torch.arange(-max_dist, max_dist, vis_step)
+    vis_step = 2 * max_dist / vis_density
+    vis_x = torch.linspace(-max_dist, max_dist, vis_density)
     vis_x_transformed = bo_utils.apply_x_transforms(vis_x, model)
     num_x = vis_x.size(0)
     # vis_freq = np.linspace(0, 1 / (2 * vis_step), num_x // 2)
@@ -105,5 +108,5 @@ def kernel(
             ax_orig.plot(vis_x, t_kern)
             ax_fft.plot(vis_freq, t_kern_ft)
 
-        fig.savefig(log_dir / 'kernel.png')
+        fig.savefig(log_dir / f'kernel{point_num:02}.png')
         plt.close(fig)

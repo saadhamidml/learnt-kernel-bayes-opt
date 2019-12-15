@@ -9,16 +9,17 @@ from . import utils
 def acquisition_function(
         model,
         experiment,
-        vis_start=-10,
-        vis_end=10.1,
-        vis_step=0.1,
-        log_dir=Path('./')
+        vis_start=None,
+        vis_end=None,
+        vis_density=250,
+        log_dir=Path('./'),
+        point_num=0
 ):
     """Plot the acquisition function given an Ax ModelBridge,
     Ax Experiment, and plotting bounds.
     """
 
-    vis_x = torch.arange(vis_start, vis_end, vis_step, dtype=torch.double)
+    vis_x = torch.linspace(vis_start, vis_end, vis_density, dtype=torch.double)
     vis_x_transformed = utils.apply_x_transforms(vis_x, model)
 
     train_x = []
@@ -47,7 +48,7 @@ def acquisition_function(
         ax.plot(vis_x.numpy(), acqf.numpy(), 'b')
 
         log_dir.mkdir(parents=True, exist_ok=True)
-        fig.savefig(log_dir / 'acquisition_function.png')
+        fig.savefig(log_dir / f'acquisition_function{point_num:02}.png')
         plt.close(fig)
 
 
