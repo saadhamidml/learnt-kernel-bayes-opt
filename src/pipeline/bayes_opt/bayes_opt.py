@@ -4,7 +4,8 @@ from ax.modelbridge.registry import Models
 from plotly import graph_objs as go
 from ax.plot.slice import plot_slice
 
-from pipeline.modelling import visualisation as mod_vis
+from ..utils import visualisation as vis
+from ..modelling import visualisation as mod_vis
 from .acquisition_function import get_acqf_constructor
 from . import visualisation as bo_vis
 
@@ -71,6 +72,19 @@ def bayes_opt_loop(experiment,
             bo_vis.acquisition_function(
                 model,
                 experiment,
+                vis_start,
+                vis_end,
+                vis_density,
+                log_dir=log_dir,
+                point_num=i
+            )
+            vis.board(
+                observer.results['function'],
+                model,
+                experiment,
+                observer.results['regret']['location'],
+                observer.results['regret']['function'],
+                n_initial_evaluations,
                 vis_start,
                 vis_end,
                 vis_density,

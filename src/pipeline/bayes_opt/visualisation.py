@@ -13,7 +13,8 @@ def acquisition_function(
         vis_end=None,
         vis_density=250,
         log_dir=Path('./'),
-        point_num=0
+        point_num=0,
+        return_only=False
 ):
     """Plot the acquisition function given an Ax ModelBridge,
     Ax Experiment, and plotting bounds.
@@ -37,6 +38,9 @@ def acquisition_function(
         )
         acqf = acqf(vis_x_transformed.unsqueeze(-1).unsqueeze(-1))
         acqf = utils.apply_y_untransfoms(acqf.detach(), vis_x, model)
+
+        if return_only:
+            return train_x.numpy(), vis_x.numpy(), acqf.numpy()
 
         # Initialize plot
         fig, ax = plt.subplots(1, 1, figsize=(16, 12))

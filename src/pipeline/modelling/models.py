@@ -17,19 +17,44 @@ class ExactGPModel(gpytorch.models.ExactGP, GPyTorchModel):
 
 
 class RBFGPModel(ExactGPModel):
-    def __init__(self, train_x, train_y, likelihood, **kwargs):
+    def __init__(
+            self,
+            train_x,
+            train_y,
+            likelihood,
+            outputscale=None,
+            lengthscale=None,
+            **kwargs
+    ):
         super(RBFGPModel, self).__init__(train_x, train_y, likelihood)
         self.covar_module = gpytorch.kernels.ScaleKernel(
             gpytorch.kernels.RBFKernel()
         )
+        if outputscale is not None:
+            self.covar_module.outputscale = outputscale
+        if lengthscale is not None:
+            self.covar_module.base_kernel.lengthscale = lengthscale
 
 
 class MaternGPModel(ExactGPModel):
-    def __init__(self, train_x, train_y, likelihood, nu=1.5, **kwargs):
+    def __init__(
+            self,
+            train_x,
+            train_y,
+            likelihood,
+            nu=1.5,
+            outputscale=None,
+            lengthscale=None,
+            **kwargs
+    ):
         super(MaternGPModel, self).__init__(train_x, train_y, likelihood)
         self.covar_module = gpytorch.kernels.ScaleKernel(
             gpytorch.kernels.MaternKernel(nu=nu)
         )
+        if outputscale is not None:
+            self.covar_module.outputscale = outputscale
+        if lengthscale is not None:
+            self.covar_module.base_kernel.lengthscale = lengthscale
 
 
 class SpectralMixtureGPModel(ExactGPModel):

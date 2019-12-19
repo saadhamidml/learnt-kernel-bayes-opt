@@ -25,7 +25,8 @@ def posterior(
         vis_end=None,
         vis_density=250,
         log_dir=Path('./'),
-        point_num=0
+        point_num=0,
+        return_only=False
 ):
     vis_x = torch.linspace(vis_start, vis_end, vis_density, dtype=torch.double)
     vis_x_transformed = bo_utils.apply_x_transforms(vis_x, model)
@@ -45,14 +46,24 @@ def posterior(
         observed_pred = model.model.model.posterior(vis_x_transformed)
         posterior_mean = observed_pred.mean
         posterior_mean = bo_utils.apply_y_untransfoms(posterior_mean, vis_x, model)
-
-        # Initialize plot
-        fig, ax = plt.subplots(1, 1, figsize=(16, 12))
-
         # Get upper and lower confidence bounds
         lower, upper = observed_pred.mvn.confidence_region()
         lower = bo_utils.apply_y_untransfoms(lower, vis_x, model)
         upper = bo_utils.apply_y_untransfoms(upper, vis_x, model)
+
+        if return_only:
+            return (
+                train_x.numpy(),
+                train_y.numpy(),
+                vis_x.numpy(),
+                posterior_mean.numpy(),
+                lower.numpy(),
+                upper.numpy()
+            )
+
+        # Initialize plot
+        fig, ax = plt.subplots(1, 1, figsize=(16, 12))
+
         # Plot training data as black stars
         ax.plot(train_x.numpy(), train_y.numpy(), 'kx')
         # Plot predictive means as blue line
@@ -74,7 +85,8 @@ def kernel(
         vis_density=250,
         true_kernel=None,
         log_dir=Path('./'),
-        point_num=0
+        point_num=0,
+        return_only=0
 ):
     max_dist = vis_end - vis_start
     vis_step = 2 * max_dist / vis_density
@@ -92,11 +104,15 @@ def kernel(
         # kern /= np.max(kern)
         kern_ft = 1 / num_x * np.abs(fftshift(fft(kern)))
 
+        vis_x = vis_x.numpy()
+
+        if return_only:
+            return vis_x, kern, vis_freq, kern_ft
+
         fig, axes = plt.subplots(2, 1, figsize=(16, 12))
         ax_orig = axes[0]
         ax_fft = axes[1]
 
-        vis_x = vis_x.numpy()
         ax_orig.plot(vis_x, kern)
         ax_fft.plot(vis_freq, kern_ft)
 

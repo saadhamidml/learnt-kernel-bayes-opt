@@ -27,6 +27,8 @@ def get_parser():
     parser.add_argument('--likelihood_type', type=str, default='gaussian')
     parser.add_argument('--kernel', type=str, default='rbf',
                         help='rbf, matern, spectral_mixture, sparse_spectrum')
+    parser.add_argument('--outputscale', type=float, default=None)
+    parser.add_argument('--lengthscale', type=float, default=None)
     parser.add_argument('--nu', type=float, default=None)
     parser.add_argument('--n_mixtures', type=int, default=None)
     # parser.add_argument('--optimiser_type', type=str, default='sgd')

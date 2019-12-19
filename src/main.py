@@ -44,6 +44,7 @@ if __name__ == '__main__':
      get_log_dir) = get_problem(parser)
     # Define experiment configs (if comparing mutliple)
     observer_log_dir = problem_log_dir / 'rbf_mat_sm'
+    observer_log_dir.mkdir(parents=True, exist_ok=True)
     options = {'kernel': ['rbf', 'matern', 'spectral_mixture']}
     seeds = None
     # Run experiments
@@ -59,11 +60,17 @@ if __name__ == '__main__':
     # Inspect results
     regrets = []
     for i in range(len(observer.record)):
-        regrets.append(observer.record[i]['regret']['location'])
-        regrets.append(observer.record[i]['regret']['function'])
-    regrets = map(np.array, regrets)
+        loc_reg = np.array(observer.record[i]['regret']['location'])
+        fun_reg = np.array(observer.record[i]['regret']['function'])
+        regrets.append(loc_reg)
+        regrets.append(fun_reg)
+        with log.StdoutRedirection(
+                observer_log_dir / 'cumulative_regrets.txt'
+        ):
+            print(f'{i} location: {loc_reg.sum()}')
+            print(f'{i} function: {fun_reg.sum()}')
     plot_regrets(
-        *regrets,
+        *tuple(regrets),
         n_initial_evaluations=flags.n_initial_evaluations,
         log_dir=observer_log_dir
     )

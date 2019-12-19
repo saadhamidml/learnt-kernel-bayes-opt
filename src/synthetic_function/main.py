@@ -19,6 +19,8 @@ def run_experiment_wrapper(flags, log_dir=None, observer=None):
         evaluation_budget=flags.evaluation_budget,
         seed=flags.seed,
         kernel=flags.kernel,
+        outputscale=flags.outputscale,
+        lengthscale=flags.lengthscale,
         nu=flags.nu,
         n_mixtures=flags.n_mixtures,
         likelihood_type=flags.likelihood_type,
@@ -40,6 +42,8 @@ def run_experiment(
         evaluation_budget=None,
         seed=None,
         kernel='rbf',
+        outputscale=None,
+        lengthscale=None,
         nu=None,
         n_mixtures=None,
         likelihood_type='gaussian',
@@ -66,6 +70,8 @@ def run_experiment(
         optimiser_type,
         learning_rate,
         training_iterations,
+        outputscale=outputscale,
+        lengthscale=lengthscale,
         nu=nu,
         n_mixtures=n_mixtures
     )

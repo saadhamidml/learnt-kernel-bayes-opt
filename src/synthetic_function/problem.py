@@ -88,6 +88,7 @@ def define_problem(
             observer.results['optimum']['function'] = 0
 
     if visualise:
+        observer.results['function'] = function
         vis.function(
             function,
             vis_start=x_start,
