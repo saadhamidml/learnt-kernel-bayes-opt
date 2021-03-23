@@ -25,7 +25,7 @@ def acquisition_function(
 
     train_x = []
     for arm in experiment.arms_by_name.values():
-        train_x.append(arm.parameters['x'])
+        train_x.append(arm.parameters['x0'])
     train_x = torch.Tensor(train_x).to(vis_x)
     train_x_transformed = utils.apply_x_transforms(train_x, model).unsqueeze(-1)
 
@@ -51,34 +51,20 @@ def acquisition_function(
         # Plot acquisition function as blue line
         ax.plot(vis_x.numpy(), acqf.numpy(), 'b')
 
+        ax.set_xlabel('x')
+        ax.set_title('Acquisition Function')
+
         log_dir.mkdir(parents=True, exist_ok=True)
         fig.savefig(log_dir / f'acquisition_function{point_num:02}.png')
         plt.close(fig)
 
 
 def regret(
-        location_regret: np.ndarray,
-        function_regret: np.ndarray,
+        *args,
         n_initial_evaluations=0,
-        log_dir=Path('./')
-):
-    steps = np.arange(location_regret.shape[0]) + n_initial_evaluations
-
-    # Initialise plot
-    fig, ax = plt.subplots(2, 1, sharex=True, figsize=(16, 12))
-    ax_fun = ax[0]
-    ax_loc = ax[1]
-
-    ax_fun.plot(steps, function_regret)
-    ax_loc.plot(steps, location_regret)
-
-    log_dir.mkdir(parents=True, exist_ok=True)
-    fig.savefig(log_dir / 'regret.png')
-    plt.close(fig)
-
-
-def mult_regrets(*args, n_initial_evaluations=0, log_dir=Path('./')):
-    steps = np.arange(args[0].shape[0]) + n_initial_evaluations
+        legend=None,
+        function_name=None,
+        log_dir=Path('./')):
     n_experiments = int(len(args) / 2)
 
     # Initialise plot
@@ -87,8 +73,20 @@ def mult_regrets(*args, n_initial_evaluations=0, log_dir=Path('./')):
     ax_loc = ax[1]
 
     for i in range(n_experiments):
+        steps = np.arange(args[i].shape[0]) + n_initial_evaluations
         ax_fun.plot(steps, args[2 * i])
         ax_loc.plot(steps, args[2 * i + 1])
+
+    if legend is not None:
+        ax_fun.legend(legend)
+
+    ax_loc.set_xlabel('Number of Data Points')
+    ax_loc.set_ylabel('Regret')
+    ax_fun.set_ylabel('Regret')
+    ax_loc.set_title('Location Regret')
+    ax_fun.set_title('Function Regret')
+    if function_name is not None:
+        fig.suptitle(f'{function_name.capitalize()} Function Optimisation Regrets')
 
     log_dir.mkdir(parents=True, exist_ok=True)
     fig.savefig(log_dir / 'regret.png')

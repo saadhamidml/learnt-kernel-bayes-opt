@@ -7,8 +7,12 @@ def get_parser():
     # Setup
     parser.add_argument('--data_dir', type=str, default='../data')
     parser.add_argument('--log_dir', type=str, default='../logs')
-    parser.add_argument('--run_name', type=str, default=None,
-                        help='Folder name in log_dir for output')
+    parser.add_argument(
+        '--run_name',
+        type=str,
+        default=None,
+        help='Folder name in log_dir for output'
+    )
     parser.add_argument('--test_run', type=int, default=0)
 
     # Problem options
@@ -18,19 +22,33 @@ def get_parser():
     parser.add_argument('--true_kernel', type=str, default='matern')
 
     # Stage of experiments
-    parser.add_argument('--repeat_exp', type=int, default=1,
-                        help='Random experiment with different seeds.')
+    parser.add_argument(
+        '--repeat_exp',
+        type=int,
+        default=1,
+        help='Random experiment with different seeds.'
+    )
     parser.add_argument('--force_train', type=int, default=0)
     parser.add_argument('--visualise', type=int, default=0)
 
     # Model parameters
     parser.add_argument('--likelihood_type', type=str, default='gaussian')
-    parser.add_argument('--kernel', type=str, default='rbf',
-                        help='rbf, matern, spectral_mixture, sparse_spectrum')
+    parser.add_argument(
+        '--kernel',
+        type=str,
+        default='rbf',
+        help='rbf, matern, spectral_mixture, sparse_spectrum'
+    )
     parser.add_argument('--outputscale', type=float, default=None)
     parser.add_argument('--lengthscale', type=float, default=None)
     parser.add_argument('--nu', type=float, default=None)
     parser.add_argument('--n_mixtures', type=int, default=None)
+    parser.add_argument(
+        '--mixture_means_constraint',
+        type=str,
+        default='positive',
+        help='positive, zero'
+    )
     # parser.add_argument('--optimiser_type', type=str, default='sgd')
     # parser.add_argument('--learning_rate', type=float, default=1e-1)
     # parser.add_argument('--training_iterations', type=int, default=1e3)
@@ -39,8 +57,12 @@ def get_parser():
     parser.add_argument('--acquisition_function', type=str, default='nei')
 
     # Experiment options
-    parser.add_argument('--seed', type=int, default=None,
-                        help='Random seed for both Numpy and Pytorch.')
+    parser.add_argument(
+        '--seed',
+        type=int,
+        default=None,
+        help='Random seed for both Numpy and Pytorch.'
+    )
     parser.add_argument('--x_start', type=float, default=None)
     parser.add_argument('--x_end', type=float, default=None)
     parser.add_argument('--x_step', type=float, default=None)

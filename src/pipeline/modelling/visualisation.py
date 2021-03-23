@@ -24,6 +24,8 @@ def posterior(
         vis_start=None,
         vis_end=None,
         vis_density=250,
+        function_name=None,
+        kernel_name=None,
         log_dir=Path('./'),
         point_num=0,
         return_only=False
@@ -35,7 +37,7 @@ def posterior(
     train_y = []
     arm_y = experiment.eval().df
     for arm in experiment.arms_by_name.values():
-        train_x.append(arm.parameters['x'])
+        train_x.append(arm.parameters['x0'])
         train_y.append(arm_y[arm_y['arm_name'] == arm.name]['mean'].values[0])
     train_x = torch.Tensor(train_x)
     train_y = torch.Tensor(train_y).squeeze()
@@ -70,8 +72,13 @@ def posterior(
         ax.plot(vis_x.numpy(), posterior_mean.numpy(), 'b')
         # Shade between the lower and upper confidence bounds
         ax.fill_between(vis_x.numpy(), lower.numpy(), upper.numpy(), alpha=0.5)
-        # ax.set_ylim([-3, 3])
+
         ax.legend(['Observed Data', 'Mean', 'Confidence'])
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        if function_name is not None and kernel_name is not None:
+            ax.set_title(f'{function_name.capitalize()} Posterior with '
+                         + f'{kernel_name} Kernel')
 
         log_dir.mkdir(parents=True, exist_ok=True)
         fig.savefig(log_dir / f'posterior{point_num:02}.png')
@@ -84,6 +91,8 @@ def kernel(
         vis_end=None,
         vis_density=250,
         true_kernel=None,
+        function_name=None,
+        kernel_name=None,
         log_dir=Path('./'),
         point_num=0,
         return_only=0
@@ -98,7 +107,7 @@ def kernel(
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         kern = model.model.model.covar_module(
-            bo_utils.apply_x_transforms(torch.zeros(1), model),
+            bo_utils.apply_x_transforms(torch.zeros(1), model).unsqueeze_(0),
             vis_x_transformed
         ).evaluate().squeeze().numpy()
         # kern /= np.max(kern)
@@ -123,6 +132,12 @@ def kernel(
             t_kern_ft = 1 / num_x * np.abs(fftshift(fft(t_kern)))
             ax_orig.plot(vis_x, t_kern)
             ax_fft.plot(vis_freq, t_kern_ft)
+
+        ax_orig.set_xlabel('x')
+        ax_fft.set_xlabel('f')
+        if function_name is not None and kernel_name is not None:
+            ax_orig.set_title(f'{kernel_name} Kernel in Original Domain')
+            ax_fft.set_title(f'{kernel_name} Kernel in Frequency Domain')
 
         fig.savefig(log_dir / f'kernel{point_num:02}.png')
         plt.close(fig)

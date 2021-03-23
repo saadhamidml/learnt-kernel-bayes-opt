@@ -1,0 +1,31 @@
+\documentclass{article}
+
+\usepackage[a4paper, margin=2cm]{geometry}
+
+\title{20 initial points; 50 total points}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+\begin{tabular}{ | l | c | c | c | c | c | c |}
+\hline
+& \multicolumn{3}{|c|}{Location Regret} & \multicolumn{3}{|c|}{Function Regret} \\
+\cline{2-7}
+& RBF & Matern & SM & RBF & Matern & SM \\
+\hline
+Ackley & 1.96 & \textbf{1.39} & 1.83 & 13.62 & \textbf{9.89} & 12.78 \\
+\hline
+Dixon-Price & 0.60 & 1.27 & \textbf{0.53} & 0.30 & 0.34 & \textbf{0.30} \\
+\hline
+Exp-Sin-Squared & 0.24 & \textbf{0.13} & 0.25 & 0.09 & \textbf{0.06} & 0.09 \\
+\hline
+Griewank & 38.07 & 76.15 & \textbf{20.21} & 3.52 & 7.48 & \textbf{2.01} \\
+\hline
+Rastrigin & \textbf{1.11} & 1.26 & 1.21 & 9.77 & \textbf{8.92} & 9.78 \\
+\hline
+\end{tabular}
+\end{center}
+
+\end{document}

@@ -7,7 +7,8 @@ def get_log_dir(flags):
             / Path(flags.problem)
             / Path(flags.function)
             / (
-                    f'{flags.noise_std}'
+                    f'{flags.n_dimensions}'
+                    + f'_{flags.noise_std}'
                     + f'_{flags.n_initial_evaluations}'
                     + f'_{flags.evaluation_budget}'
             )
@@ -20,6 +21,7 @@ def get_log_dir(flags):
             run_name += f'{flags.nu}'
         elif flags.kernel == 'spectral_mixture':
             run_name += f'{flags.n_mixtures}'
+            run_name += f'{flags.mixture_means_constraint}'
         run_name += (
                 f'{flags.likelihood_type}'
                 # + f'{flags.optimiser_type}'

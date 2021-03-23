@@ -6,8 +6,10 @@ from ax.plot.slice import plot_slice
 
 from ..utils import visualisation as vis
 from ..modelling import visualisation as mod_vis
+from .utils import get_current_regrets
 from .acquisition_function import get_acqf_constructor
 from . import visualisation as bo_vis
+
 
 def bayes_opt_loop(experiment,
                    model_constructor,
@@ -19,6 +21,8 @@ def bayes_opt_loop(experiment,
                    vis_start=None,
                    vis_end=None,
                    vis_density=None,
+                   function_name=None,
+                   kernel_name=None,
                    log_dir=Path('./'),
                    observer=None):
     print(f'Running Bayesian Optimisation')
@@ -35,18 +39,9 @@ def bayes_opt_loop(experiment,
 
         # Work out regrets, and add to observer
         if observer is not None:
-            from ax.core.observation import observations_from_data, separate_observations
-            observations = observations_from_data(experiment, experiment.eval())
-            observation_features, observation_data = separate_observations(observations)
-            from .utils import observation_features_to_tensor, observation_data_to_tensor
-            obs_x = observation_features_to_tensor(observation_features)
-            obs_f = observation_data_to_tensor(observation_data)
-            opt_x = observer.results['optimum']['x']
-            opt_f = observer.results['optimum']['function']
-            loc_regret = torch.abs(obs_x - opt_x).min()
-            fun_regret = torch.abs(obs_f - opt_f).min()
-            observer.results['regret']['location'].append(loc_regret.item())
-            observer.results['regret']['function'].append(fun_regret.item())
+            loc_regret, fun_regret = get_current_regrets(experiment, observer)
+            observer.current['results'][-1]['regret']['location'].append(loc_regret.item())
+            observer.current['results'][-1]['regret']['function'].append(fun_regret.item())
 
         if visualise:
             # go.Figure(
@@ -58,6 +53,8 @@ def bayes_opt_loop(experiment,
                 vis_start,
                 vis_end,
                 vis_density,
+                function_name=function_name,
+                kernel_name=kernel_name,
                 log_dir=log_dir,
                 point_num=i
             )
@@ -66,6 +63,8 @@ def bayes_opt_loop(experiment,
                 vis_start,
                 vis_end,
                 vis_density,
+                function_name=function_name,
+                kernel_name=kernel_name,
                 log_dir=log_dir,
                 point_num=i
             )
@@ -79,15 +78,17 @@ def bayes_opt_loop(experiment,
                 point_num=i
             )
             vis.board(
-                observer.results['function'],
+                observer.current['function'],
                 model,
                 experiment,
-                observer.results['regret']['location'],
-                observer.results['regret']['function'],
+                observer.current['results'][-1]['regret']['location'],
+                observer.current['results'][-1]['regret']['function'],
                 n_initial_evaluations,
                 vis_start,
                 vis_end,
                 vis_density,
+                function_name=function_name,
+                kernel_name=kernel_name,
                 log_dir=log_dir,
                 point_num=i
             )

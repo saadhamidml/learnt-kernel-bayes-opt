@@ -539,3 +539,4 @@ TSWLatexianTemp*
 ########## Project ##########
 data/
 logs/
+*.pdf

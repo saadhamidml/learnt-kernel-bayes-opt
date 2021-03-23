@@ -18,7 +18,7 @@ class ExObserver:
         self.seeds = seeds
         self.hyp_params = hyp_params
         self.record = []
-        self.results = {}
+        self.current = {}
 
     def register_run(self, config=None):
         if config is not None:
@@ -26,11 +26,18 @@ class ExObserver:
         else:
             self.record.append({})
         # Changing self.results will alter self.record
-        self.results = self.record[-1]
-        self.results['seed'] = []
-        self.results['test_mll'] = []
-        self.results['optimum'] = {}
-        self.results['regret'] = {'location': [], 'function': []}
+        self.current = self.record[-1]
+        self.current['seed'] = []
+        self.current['optimum'] = {}
+        self.current['results'] = []
+
+    def initialise_results_container(self):
+        self.current['results'].append({
+            'test_mll': [],
+            'regret': {'location': [], 'function': []},
+            'cumulative_location_regret': None,
+            'cumulative_function_regret': None
+        })
 
     def compare_configs(self, metric, print_wrt=None, log_dir=Path('./')):
         """For each combo of hyp_params work out the averages and std_devs
@@ -42,8 +49,11 @@ class ExObserver:
         averages = []
         std_devs = []
         for config in self.record:
-            config_average = np.mean(config[metric])
-            config_std_dev = np.std(config[metric])
+            metric_values = []
+            for i in range(len(config['seed'])):
+                metric_values.append(config['results'][i][metric])
+            config_average = np.mean(metric_values)
+            config_std_dev = np.std(metric_values)
             averages.append(config_average)
             std_devs.append(config_std_dev)
             if print_wrt is not None:
@@ -68,6 +78,23 @@ class ExObserver:
             for key, value in best_config.items():
                 print(f'{key}: {value}')
             print(f'average {metric}: {averages[best_index]}')
+
+
+def repeat_experiment(
+        flags,
+        seeds,
+        get_log_dir,
+        unparsed_args,
+        run_experiment_wrapper,
+        observer
+):
+    for i in range(flags.repeat_exp):
+        random_seeds.set_seed(flags, seeds, i)
+        _, log_dir = get_log_dir(flags)
+        log.save_config(flags, unparsed_args, log_dir)
+        observer.current['seed'].append(flags.seed)
+        observer.initialise_results_container()
+        run_experiment_wrapper(flags, log_dir, observer)
 
 
 def multi_config(
@@ -111,19 +138,23 @@ def multi_config(
             for i, key in enumerate(options.keys()):
                 setattr(flags, key, config[i])
             observer.register_run(config)
-            for i in range(flags.repeat_exp):
-                random_seeds.set_seed(flags, seeds, i)
-                _, log_dir = get_log_dir(flags)
-                log.save_config(flags, unparsed_args, log_dir)
-                observer.results['seed'].append(flags.seed)
-                run_experiment_wrapper(flags, log_dir, observer)
+            repeat_experiment(
+                flags,
+                seeds,
+                get_log_dir,
+                unparsed_args,
+                run_experiment_wrapper,
+                observer
+            )
     else:
         observer = ExObserver(seeds)
         observer.register_run()
-        for i in range(flags.repeat_exp):
-            random_seeds.set_seed(flags, seeds, i)
-            _, log_dir = get_log_dir(flags)
-            log.save_config(flags, unparsed_args, log_dir)
-            observer.results['seed'].append(flags.seed)
-            run_experiment_wrapper(flags, log_dir, observer)
+        repeat_experiment(
+            flags,
+            seeds,
+            get_log_dir,
+            unparsed_args,
+            run_experiment_wrapper,
+            observer
+        )
     return observer

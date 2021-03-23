@@ -1,8 +1,14 @@
 import importlib
-import numpy as np
+import os
+import shutil
+import matplotlib.pyplot as plt
 
-from pipeline.utils import cli, random_seeds, log, experiment
-from pipeline.bayes_opt.visualisation import mult_regrets as plot_regrets
+from pipeline.utils import cli, log, experiment
+from pipeline.bayes_opt.visualisation import regret as plot_regrets
+from pipeline.utils.visualisation import (
+    group_label_transpose,
+    grouped_bar_plot
+)
 
 
 def get_problem(parser):
@@ -44,8 +50,11 @@ if __name__ == '__main__':
      get_log_dir) = get_problem(parser)
     # Define experiment configs (if comparing mutliple)
     observer_log_dir = problem_log_dir / 'rbf_mat_sm'
-    observer_log_dir.mkdir(parents=True, exist_ok=True)
+    if os.path.exists(observer_log_dir):
+        shutil.rmtree(observer_log_dir)
+    observer_log_dir.mkdir(parents=True)
     options = {'kernel': ['rbf', 'matern', 'spectral_mixture']}
+    # options = None
     seeds = None
     # Run experiments
     observer = experiment.multi_config(
@@ -57,20 +66,47 @@ if __name__ == '__main__':
         mode='list',
         get_log_dir=get_log_dir
     )
-    # Inspect results
-    regrets = []
-    for i in range(len(observer.record)):
-        loc_reg = np.array(observer.record[i]['regret']['location'])
-        fun_reg = np.array(observer.record[i]['regret']['function'])
-        regrets.append(loc_reg)
-        regrets.append(fun_reg)
-        with log.StdoutRedirection(
-                observer_log_dir / 'cumulative_regrets.txt'
-        ):
-            print(f'{i} location: {loc_reg.sum()}')
-            print(f'{i} function: {fun_reg.sum()}')
-    plot_regrets(
-        *tuple(regrets),
-        n_initial_evaluations=flags.n_initial_evaluations,
+    # Compare regrets for each seed
+    for i in range(len(observer.current['seed'])):
+        seed_comparison_log_dir = observer_log_dir / str(
+            observer.current['seed'][i]
+        )
+        seed_comparison_log_dir.mkdir(parents=True)
+        regrets = []
+        for j in range(len(observer.record)):
+            loc_reg, fun_reg = log.save_cumulative_regrets(
+                observer.record[j]['results'][i],
+                record_name=options['kernel'][j],
+                return_regrets=True,
+                log_dir=seed_comparison_log_dir
+            )
+            regrets.append(loc_reg)
+            regrets.append(fun_reg)
+        plot_regrets(
+            *tuple(regrets),
+            n_initial_evaluations=flags.n_initial_evaluations,
+            legend=options['kernel'],
+            log_dir=seed_comparison_log_dir
+        )
+    # Compare average cumulative regrets
+    cum_loc_reg_avg, cum_loc_reg_sd = observer.compare_configs(
+        'cumulative_location_regret',
+        print_wrt='kernel',
         log_dir=observer_log_dir
     )
+    cum_fun_reg_avg, cum_fun_reg_sd = observer.compare_configs(
+        'cumulative_function_regret',
+        print_wrt='kernel',
+        log_dir=observer_log_dir
+    )
+    fig, ax = grouped_bar_plot(*group_label_transpose(
+        cum_loc_reg_avg,
+        cum_loc_reg_sd,
+        cum_fun_reg_avg,
+        cum_fun_reg_sd
+    ))
+    ax.set_xticklabels(['Location', 'Function'])
+    ax.legend(options['kernel'])
+    ax.set_title('Cumulative Regrets')
+    fig.savefig(observer_log_dir / 'cumulative_regrets.png')
+    plt.close(fig)

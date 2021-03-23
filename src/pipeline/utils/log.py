@@ -1,6 +1,7 @@
 from pathlib import Path
 import sys
 import subprocess
+import numpy as np
 
 
 def default_log_dir(flags):
@@ -32,8 +33,8 @@ def save_config(flags, unparsed_args, log_dir=Path('./')):
     # filename_log = "info_" + time.strftime("%m%d_%H%M%S") + ".txt"
     filename_log = 'info.txt'
     file = open(log_dir / filename_log, "w")
-    label = subprocess.check_output(["git", "describe", "--always"]).strip()
-    file.write(f'latest git commit on this branch: {label}\n')
+    # label = subprocess.check_output(["git", "describe", "--always"]).strip()
+    # file.write(f'latest git commit on this branch: {label}\n')
     file.write('\nflags: \n')
     bash_command = 'python'
     flags_dict = vars(flags)
@@ -60,3 +61,34 @@ class StdoutRedirection:
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
         sys.stdout = sys.__stdout__
+
+
+def save_cumulative_regrets(
+        record_results,
+        record_name=None,
+        return_regrets=False,
+        log_dir=Path('./')
+):
+    """
+    Saves cumulative function and location regrets in log_dir.
+
+    record_results is the results dictionary stored by the observer for
+    each experiment.
+    """
+    loc_reg = np.array(record_results['regret']['location'])
+    fun_reg = np.array(record_results['regret']['function'])
+    cum_loc_reg = loc_reg.sum()
+    cum_fun_reg = fun_reg.sum()
+    if record_results['cumulative_location_regret'] is None:
+        record_results['cumulative_location_regret'] = cum_loc_reg
+    if record_results['cumulative_function_regret'] is None:
+        record_results['cumulative_function_regret'] = cum_fun_reg
+    with StdoutRedirection(log_dir / 'cumulative_regrets.txt'):
+        if record_name is not None:
+            print(f'{record_name} location: {cum_loc_reg}')
+            print(f'{record_name} function: {cum_fun_reg}')
+        else:
+            print(f'location: {loc_reg.sum()}')
+            print(f'function: {fun_reg.sum()}')
+    if return_regrets:
+        return loc_reg, fun_reg

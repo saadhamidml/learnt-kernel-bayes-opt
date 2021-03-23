@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/logs" />
       <excludeFolder url="file://$MODULE_DIR$/paper" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (kernel_learning)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Remote Python 3.7.6 (sftp://saad@aimscdt1.eng.ox.ac.uk:22/home/saad/miniconda3/envs/learnt-kernel-bayes-opt/bin/python)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

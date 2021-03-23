@@ -1,7 +1,82 @@
 \documentclass{article}
 
+\usepackage[a4paper, margin=2cm]{geometry}
+
 \title{Learnt Kernels}
 
 \begin{document}
+
+\maketitle
+
+1D results are shown in the table below.
+\begin{center}
+\begin{tabular}{ | l | c | c | c | c | c | c |}
+\hline
+& \multicolumn{3}{|c|}{Location Regret} & \multicolumn{3}{|c|}{Function Regret} \\
+\cline{2-7}
+& RBF & Matern & SM & RBF & Matern & SM \\
+\hline
+Ackley & 14.92 & \textbf{11.35} & 21.09 & 63.12 & \textbf{40.38} & 82.18 \\
+\hline
+Dixon-Price & \textbf{1.67} & 1.74 & 2.62 & \textbf{0.26} & 0.31 & 0.54 \\
+\hline
+Exp-Sin-Squared & 1.88 & \textbf{0.81} & 1.34 & 2.39 & \textbf{0.81} & 1.57 \\
+\hline
+Griewank & 323.17 & \textbf{155.13} & 239.81 & 8.98 & \textbf{4.70} & 15.61 \\
+\hline
+Levy & 1.49 & 1.61 & \textbf{0.75} & 0.18 & 0.22 & \textbf{0.09} \\
+\hline
+Rastrigin & 6.17 & \textbf{0.87} & 5.48 & 105.90 & \textbf{19.90} & 66.25 \\
+\hline
+\end{tabular}
+\end{center}
+
+2D results are shown in the table below.
+\begin{center}
+\begin{tabular}{ | l | c | c | c | c | c | c |}
+\hline
+& \multicolumn{3}{|c|}{Location Regret} & \multicolumn{3}{|c|}{Function Regret} \\
+\cline{2-7}
+& RBF & Matern & SM & RBF & Matern & SM \\
+\hline
+Ackley & 840.26 & \textbf{172.79} & 318.88 & 1207.88 & \textbf{278.02} & 634.96 \\
+\hline
+Dixon-Price & 116.66 & 101.83 & \textbf{94.71} & 3038.69 & 2370.73 & \textbf{1231.90} \\
+\hline
+Griewank & \textbf{2013.61} & 2706.30 & 2317.83 & \textbf{168.98} & 243.37 & 186.00 \\
+\hline
+Levy & \textbf{42.42} & 81.01 & 84.88 & \textbf{36.88} & 61.21 & 62.57 \\
+\hline
+Michaelwicz & 30.95 & 33.68 & \textbf{15.00} & \textbf{162.33} & 167.89 & 168.28 \\
+\hline
+Rastrigin & \textbf{79.71} & 100.59 & 105.29 & \textbf{299.44} & 498.25 & 455.07 \\
+\hline
+Rosenbrock & 135.19 & 110.88 & \textbf{100.67} & 70081.30 & \textbf{66042.01} & 71528.35 \\
+\hline
+Three Hump Camel & \textbf{52.14} & 56.71 & 58.99 & 83.88 & 79.61 & \textbf{75.61} \\
+\hline
+\end{tabular}
+\end{center}
+
+1D: 20 initial points; 50 total points
+\begin{center}
+\begin{tabular}{ | l | c | c | c | c | c | c |}
+\hline
+& \multicolumn{3}{|c|}{Location Regret} & \multicolumn{3}{|c|}{Function Regret} \\
+\cline{2-7}
+& RBF & Matern & SM & RBF & Matern & SM \\
+\hline
+Ackley & 1.96 & \textbf{1.39} & 1.83 & 13.62 & \textbf{9.89} & 12.78 \\
+\hline
+Dixon-Price & 0.60 & 1.27 & \textbf{0.53} & 0.30 & 0.34 & \textbf{0.30} \\
+\hline
+Exp-Sin-Squared & 0.24 & \textbf{0.13} & 0.25 & 0.09 & \textbf{0.06} & 0.09 \\
+\hline
+Griewank & 38.07 & 76.15 & \textbf{20.21} & 3.52 & 7.48 & \textbf{2.01} \\
+\hline
+Rastrigin & \textbf{1.11} & 1.26 & 1.21 & 9.77 & \textbf{8.92} & 9.78 \\
+\hline
+\end{tabular}
+\end{center}
 
 \end{document}

@@ -3,5 +3,5 @@
   <component name="JavaScriptSettings">
     <option name="languageLevel" value="ES6" />
   </component>
-  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.7 (kernel_learning)" project-jdk-type="Python SDK" />
+  <component name="ProjectRootManager" version="2" project-jdk-name="Remote Python 3.7.6 (sftp://saad@aimscdt1.eng.ox.ac.uk:22/home/saad/miniconda3/envs/learnt-kernel-bayes-opt/bin/python)" project-jdk-type="Python SDK" />
 </project>
